@@ -23,11 +23,12 @@ RUN pip install torch torchvision numpy nibabel matplotlib scipy scikit-image Si
 #     rm -f /fslinstaller.py
 
 # RUN mv /usr/local/fsl /usr/local/bin/fsl
+RUN apt install -y elastix
 
 
 # ===================Copy Source Code===============================
 
-RUN mkdir /module
+# RUN mkdir /module
 WORKDIR /module
 
 COPY src /module/src

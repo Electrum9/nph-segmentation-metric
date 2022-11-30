@@ -246,16 +246,16 @@ def bone_extracted(ct_img_path, outName=""):
 
 
 
-#def contrastStretch(ct_img_path, percent = (10,90)):
-#    """Apply the contrast stretching on 2D or 3D image"""
-#    ct_img = sitk.ReadImage(ct_img_path)
-#    ct_nda = sitk.GetArrayFromImage(ct_img)
-#    p1, p2 = np.percentile(ct_nda, percent, interpolation='nearest')
-#    nda_rescale = exposure.rescale_intensity(ct_nda, in_range = (p1, p2))
-#    ct_img_cs = sitk.GetImageFromArray(nda_rescale)
-#    ct_img_cs.CopyInformation(ct_img)
-#    output_ct_name = ct_img_path[:ct_img_path.find('.nii.gz')]+'_contrastStretching.nii.gz'
-#    sitk.WriteImage(ct_img_cs, output_ct_name)
-#    return output_ct_name
+def contrastStretch(ct_img_path, percent = (10,90)):
+    """Apply the contrast stretching on 2D or 3D image"""
+    ct_img = sitk.ReadImage(ct_img_path)
+    ct_nda = sitk.GetArrayFromImage(ct_img)
+    p1, p2 = np.percentile(ct_nda, percent, interpolation='nearest')
+    nda_rescale = exposure.rescale_intensity(ct_nda, in_range = (p1, p2))
+    ct_img_cs = sitk.GetImageFromArray(nda_rescale)
+    ct_img_cs.CopyInformation(ct_img)
+    output_ct_name = ct_img_path[:ct_img_path.find('.nii.gz')]+'_contrastStretching.nii.gz'
+    sitk.WriteImage(ct_img_cs, output_ct_name)
+    return output_ct_name
 
 
