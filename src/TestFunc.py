@@ -262,7 +262,7 @@ def runTest(imgName, outputPath, dataPath, betPath, device, BS, model):
     # dataPath=os.path.join(dataPath,'{}.nii.gz'.format(imgName))     
  
     # betPath=os.path.join(betPath,'{}_Mask.nii.gz'.format(imgName))
-    betPath = betPath / f"{imgName}_Mask.nii.gz"
+    betPath = betPath / f"{imgName}_Mask.nii.gz" # TODO: Fix imgName so it doesn't have the file extension
     
     testDataset=NPHDataset(dataPath, betPath, imgName,Train=False)
     # testDataset=NPHDataset("/module/src/Norm_old_003_96yo.nii.gz", betPath, imgName,Train=False)

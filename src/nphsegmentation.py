@@ -24,11 +24,14 @@ def preprocessing(inName, outPath):
     
     """
     
-    outName =  outPath.parent / (outPath.name + "_Mask.nii.gz")
+    outName =  outPath.parent / (outPath.name.split('.')[0] + "_Mask.nii.gz")
     # print(outName)
     # iname = "intermediate_" + outPath.name
-    ipath = outPath.parent / ("intermediate_" + outPath.name)
+    print(f"{outPath=}")
+    #ipath = outPath.parent / ("intermediate_" + outPath.name)
+    ipath = outPath
     print(f"{ipath=}")
+    #breakpoint()
     
     ct_scan_path = outPath
     ct_scan_wodevice_bone = CTtools.bone_extracted(inName, ipath)
@@ -51,32 +54,39 @@ def preprocessing(inName, outPath):
     stripped = postSkullStrip(inName, ipath)
     nii_image = nib.Nifti1Image(stripped.astype(np.float32), affine=np.eye(4))
     nib.save(nii_image, outName) # the corrected raw scans, should have a good number of slices bounded to just the brain + maybe some thin shape of the skull
+
+    #breakpoint()
     
     # Affine transformation
-    call(['flirt', '-in', ct_scan_wodevice, '-ref', MNI_152, '-applyxfm', '-init', nameOfAffineMatrix, '-out', ct_scan_wodevice[:ct_scan_wodevice.find('.nii.gz')]+'_MNI152.nii.gz'])
+    call(['flirt', '-in', ct_scan_wodevice, '-ref', MNI_152, '-applyxfm', '-init', nameOfAffineMatrix, '-out', str(ct_scan_wodevice).split('.')[0] + '_MNI152.nii.gz'])
 
     # the code below implement the deformable transformation
 
-    ct_scan_wodevice_contraststretching = CTtools.contrastStretch(ct_scan_wodevice)
+    ct_scan_wodevice_contraststretching = CTtools.contrastStretch(str(ct_scan_wodevice))
 
-    call(['flirt', '-in', ct_scan_wodevice_contraststretching, '-ref', MNI_152, '-applyxfm', '-init', nameOfAffineMatrix, '-out', ct_scan_wodevice_contraststretching[:ct_scan_wodevice_contraststretching.find('.nii.gz')]+'_MNI152.nii.gz'])
+    call(['flirt', '-in', ct_scan_wodevice_contraststretching, '-ref', MNI_152, '-applyxfm', '-init', nameOfAffineMatrix, '-out', 
+        ct_scan_wodevice_contraststretching[:ct_scan_wodevice_contraststretching.find('.nii.gz')]+'_MNI152.nii.gz'])
 
     call(['elastix', '-m', ct_scan_wodevice_contraststretching[:ct_scan_wodevice_contraststretching.find('.nii.gz')]+'_MNI152.nii.gz', '-f', MNI_152, '-out', os.path.dirname(ct_scan_path), '-p', bspline_path])
     
 
 def main(input_path, output_path, rdir, betPath=pathlib.Path('/module/src/skull-strip/'), gtPath='gt', device='cuda', BS=200, modelPath=None):
     log.info("f{input_path.stem=}")
+    print(f"{input_path=}")
         
     device = checkDevice(device)
     model  = loadModel(modelPath, device)
     
     output_path_dict = dict()
     
+    # input_name = input_path.name.split('.')[0]
+    input_file = input_path.name
     input_name = input_path.name.split('.')[0]
+    #breakpoint()
     
-    # skull_strip(input_path, betPath / input_name, running_dir="/home/cirrus/projects/vision/Bisque_Module_NPH/Modules/NPHSegmentation/src/")
-    # skull_strip(input_path, betPath / input_name, running_dir=rdir)
-    preprocessing(input_path, betPath / input_name)
+    # skull_strip(input_path, betPath / input_file, running_dir="/home/cirrus/projects/vision/Bisque_Module_NPH/Modules/NPHSegmentation/src/")
+    # skull_strip(input_path, betPath / input_file, running_dir=rdir)
+    preprocessing(input_path, betPath / input_file)
     
     resultName = runTest(input_name, output_path, input_path, betPath, device, BS, model) # Filename
     # maxArea, maxPos, finalimg, outputName = segVent(input_name, output_path, resultName) # outputName is filename
