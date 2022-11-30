@@ -1,6 +1,8 @@
 # FROM python:3.6.15-buster
 # FROM nvidia/cuda:11.7.1-base-ubuntu20.04 
-FROM python:3.8.13-buster
+# FROM python:3.8.13-buster
+FROM biodev.ece.ucsb.edu:5000/nphsegmentation:v1.0.3
+# temporary fix, so I don't have to install fsl again
 
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -52,4 +54,4 @@ COPY NPHSegmentation.xml /module/NPHSegmentation.xml
 ENV PATH /module:$PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 #:/usr/local/fsl/bin
 ENV PYTHONPATH $PYTHONPATH:/module/src
-# ENV FSLOUTPUTTYPE NIFTI_GZ
+ENV FSLOUTPUTTYPE NIFTI_GZ
