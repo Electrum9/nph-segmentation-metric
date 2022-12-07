@@ -1,3 +1,5 @@
 *.nii.gz
 *.txt
 *.pyc
+*:Zone.Identifier
+*.log
