@@ -36,7 +36,7 @@ def preprocessing(inName, outPath):
     ct_scan_path = outPath
     ct_scan_wodevice_bone = CTtools.bone_extracted(inName, ipath)
     #ct_scan_wodevice = ct_scan_path
-    ct_scan_wodevice = outPath
+    # ct_scan_wodevice = outPath
     
     # MNI_152_bone = os.path.join(os.getcwd(),'MNI152_T1_1mm_bone.nii.gz')
     MNI_152_bone = pathlib.Path('MNI152_T1_1mm_bone.nii.gz')
@@ -58,16 +58,18 @@ def preprocessing(inName, outPath):
     #breakpoint()
     
     # Affine transformation
-    call(['flirt', '-in', ct_scan_wodevice, '-ref', MNI_152, '-applyxfm', '-init', nameOfAffineMatrix, '-out', str(ct_scan_wodevice).split('.')[0] + '_MNI152.nii.gz'])
+    # call(['flirt', '-in', ct_scan_wodevice, '-ref', MNI_152, '-applyxfm', '-init', nameOfAffineMatrix, '-out', str(ct_scan_wodevice).split('.')[0] + '_MNI152.nii.gz'])
+    call(['flirt', '-in', inName, '-ref', MNI_152, '-applyxfm', '-init', nameOfAffineMatrix, '-out', str(inName.name).split('.')[0] + '_MNI152.nii.gz'])
 
     # the code below implement the deformable transformation
 
-    ct_scan_wodevice_contraststretching = CTtools.contrastStretch(str(ct_scan_wodevice))
+    ct_scan_wodevice_contraststretching = CTtools.contrastStretch(str(inName), output_name=str(inName.name.split('.')[0]))
 
     call(['flirt', '-in', ct_scan_wodevice_contraststretching, '-ref', MNI_152, '-applyxfm', '-init', nameOfAffineMatrix, '-out', 
         ct_scan_wodevice_contraststretching[:ct_scan_wodevice_contraststretching.find('.nii.gz')]+'_MNI152.nii.gz'])
 
     call(['elastix', '-m', ct_scan_wodevice_contraststretching[:ct_scan_wodevice_contraststretching.find('.nii.gz')]+'_MNI152.nii.gz', '-f', MNI_152, '-out', os.path.dirname(ct_scan_path), '-p', bspline_path])
+    # breakpoint()
     
 
 def main(input_path, output_path, rdir, betPath=pathlib.Path('/module/src/skull-strip/'), gtPath='gt', device='cuda', BS=200, modelPath=None):

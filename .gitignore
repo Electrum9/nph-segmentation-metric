@@ -3,3 +3,4 @@
 *.pyc
 *.mat
 *:Zone.Identifier
+*.log

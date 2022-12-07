@@ -174,9 +174,9 @@ def test(model, test_loader, shape, device):
             output = model(data)
             softmax=nn.Softmax(dim=1)
             output=torch.reshape(output,(output.shape[0], 5, 2,2))
-            output=softmax(output)
+            output=softmax(output).cpu()
             
-            pred=output.argmax(dim=1, keepdim=True).cpu()
+            # pred=output.argmax(dim=1, keepdim=True).cpu()
 
             N=output.shape[0]
 
@@ -186,7 +186,8 @@ def test(model, test_loader, shape, device):
 
                 # reconstructed[x:x+1+1,y:y+1+1,z]=pred[k,0,:,:].cpu()
                 # breakpoint()
-                reconstructed[x:x+1+1,y:y+1+1,z]=pred[k,0,:,:]
+                # reconstructed[x:x+1+1,y:y+1+1,z]=pred[k,0,:,:]
+                reconstructed[x:x+1+1,y:y+1+1,z]=output[k,1,:,:]
                 # classes.add(pred[k,0,:,:])
 
             # loss, correct, total = evaluation(output, target, TP, FP, FN)
