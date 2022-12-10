@@ -1,17 +1,18 @@
-
+import time
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
 import os
-
 import nibabel as nib
-import torchvision
 import torchvision.transforms as transforms
 import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
 from scipy import ndimage
+
+# TODO: Clear out unused imports
+# import torchvision
+# import torch.nn.functional as F
+# import torch.optim as optim
 
 
 # device = 'cuda:3' if torch.cuda.is_available() else 'cpu'
@@ -67,7 +68,7 @@ def readAll(imgPath, betPath):
             for j in range(17, y-17, 2):
                 
                 
-                sample, center =getCenter(image, brainMask, i, j, k)
+                sample, center = getCenter(image, brainMask, i, j, k)
                 if center.any():
                     positions.append((i,j,k))
 #     return image, annotation
@@ -81,11 +82,6 @@ def getPatch(image_full, brainMask, i, j, k):
     
     return image, torch.tensor([i,j,k])
 
-# NEW NPHDataset
-
-
-# OLD NPHDataset
-
 class NPHDataset(Dataset):
     def __init__(self, dataPath, betPath, name, Train=False):
         
@@ -98,7 +94,6 @@ class NPHDataset(Dataset):
 
     def __getitem__(self, idx):
         
-#         return 0
         if torch.is_tensor(idx):
             idx = idx.tolist()
         
@@ -120,7 +115,6 @@ class MyModel(nn.Module):
             nn.BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True),
             nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=2, stride=2, padding=1, dilation=1, ceil_mode=False),
-            
         )
         
         self.layer1=ResNet.layer1
@@ -140,30 +134,19 @@ class MyModel(nn.Module):
         return x
 
 
-# In[6]:
-
-
-# def htest(model,epoch, test_loader, status, BS):
 def test(model, test_loader, shape, device):
     """
     5class test function (new).
     """
 
     model.eval()
-    # testLoss = 0
-    # testCorrect = 0
-    # testTotal=0
-    # bs=BS
-    # TP=[0]*7
-    # FP=[0]*7
-    # FN=[0]*7
 
-    result=[]
+    # result=[]
     # classes = set()
     # Don't update model
     with torch.no_grad():
-        predList=[]
-        targetList=[]
+        # predList=[]
+        # targetList=[]
         # Predict
         reconstructed=np.zeros(shape)
         for batch_index, batch_samples in enumerate(test_loader):
@@ -182,67 +165,17 @@ def test(model, test_loader, shape, device):
 
             for k in range(N):
 
-                x, y, z=map(int, (pos[k][0].item(), pos[k][1].item(), pos[k][2].item()))
+                # x, y, z=map(int, (pos[k][0].item(), pos[k][1].item(), pos[k][2].item()))
+                x, y, z = map(lambda x: int(x.item()), pos[k,0:2])
 
                 # reconstructed[x:x+1+1,y:y+1+1,z]=pred[k,0,:,:].cpu()
                 # breakpoint()
                 # reconstructed[x:x+1+1,y:y+1+1,z]=pred[k,0,:,:]
-                reconstructed[x:x+1+1,y:y+1+1,z]=output[k,1,:,:]
+                reconstructed[x:x+1+1,y:y+1+1,z]=output[k,3,:,:]
                 # classes.add(pred[k,0,:,:])
+            breakpoint()
 
-            # loss, correct, total = evaluation(output, target, TP, FP, FN)
-            # testCorrect+=correct
-            # testLoss+=loss
-            # testTotal+=total
-
-            # if (batch_index+1) % (100) == 0:
-            #     print('{} Epoch: {} [{}/{} ({:.0f}%)]\tTest Loss: {:.6f} Current accuracy: {:.3f}%'.format(status,
-            #         epoch, batch_index+1, len(test_loader),
-            #         100.0 * batch_index / len(test_loader), testLoss.item()/(batch_index+1), testCorrect/testTotal*100))
-
-
-    # print('{} Epoch {}: Correct point: {}/{}, {}'.format(status, epoch, testCorrect, testTotal, testCorrect/testTotal*100))
-    # for i in range(1,5):
-    #     print('    Dice score for class{}: {}'.format(i, 2*TP[i]/(2*TP[i]+FP[i]+FN[i])))
-
-
-    # return testLoss, testCorrect, testTotal, TP, FN, FP
-    # print(f"{classes=}")
     return reconstructed
-
-# def test(model, test_loader, shape, device):
-
-#     model.eval()
-
-#     # Don't update model
-# #     print(len(test_loader))
-#     with torch.no_grad():
-#         predUnique={}
-#         targetUnique={}
-#         # Predict
-        
-#         reconstructed=np.zeros(shape)
-# #         probScore=np.zeros((4, shape[0], shape[1],shape[2]))
-#         for batch_index, batch_samples in enumerate(test_loader):
-#             data, pos = batch_samples['img'].to(device, dtype=torch.float), batch_samples['pos']
-#             output = model(data)
-#             softmax=nn.Softmax(dim=1)
-#             output=torch.reshape(output,(output.shape[0], 4, 2, 2))
-            
-#             output=softmax(output)
-#             pred=output.argmax(dim=1, keepdim=True).cpu()
-
-#             N=output.shape[0]
-
-#             for k in range(N):
-
-#                 x, y, z=pos[k][0].item(), pos[k][1].item(), pos[k][2].item()
-
-#                 # reconstructed[x:x+1+1,y:y+1+1,z]=pred[k,0,:,:].cpu()
-#                 reconstructed[x:x+1+1,y:y+1+1,z]=pred[k,0,:,:]
-                
-            
-#     return reconstructed
 
 def loadModel(modelPath, device):
     ResNet=torch.hub.load('pytorch/vision:v0.10.0', 'resnet18', pretrained=False)
@@ -258,30 +191,23 @@ def checkDevice(device):
 
 def runTest(imgName, outputPath, dataPath, betPath, device, BS, model):
       
-#     BS=200
-
     # dataPath=os.path.join(dataPath,'{}.nii.gz'.format(imgName))     
  
     # betPath=os.path.join(betPath,'{}_Mask.nii.gz'.format(imgName))
     betPath = betPath / f"{imgName}_Mask.nii.gz" # TODO: Fix imgName so it doesn't have the file extension
     
     testDataset=NPHDataset(dataPath, betPath, imgName,Train=False)
+    
     # testDataset=NPHDataset("/module/src/Norm_old_003_96yo.nii.gz", betPath, imgName,Train=False)
     # test_loader = DataLoader(testDataset, batch_size=BS, num_workers=16, drop_last=False, shuffle=False)
     test_loader = DataLoader(testDataset, batch_size=BS, num_workers=1, drop_last=False, shuffle=False)
     shape=testDataset.imageShape
 
-#     print(testDataset.__len__())
-
-
-
-    # In[15]:
     print('Start Running:', imgName)
-    import time
 
     start = time.time()
 
-    reconstructed=test(model, test_loader, shape, device)
+    reconstructed = test(model, test_loader, shape, device)
     # changeClass(reconstructed)
 #     np.save('reconstructed/probScore_{}_{}.npy'.format(modelname, imgName), probScore)
 #     correct, total, TP, FP, FN=diceScore(reconstructed, testDataset.annotation)
@@ -296,7 +222,8 @@ def runTest(imgName, outputPath, dataPath, betPath, device, BS, model):
 #     nib.save(img, 'reconstructed/reconstructed_{}_{}.nii.gz'.format(modelname, imgName))  
 #     print('Save to: reconstructed_{}_{}.nii.gz'.format(modelname, imgName))
 
-    result_noNoise=eliminateNoise(reconstructed, minArea=64)                
+    # result_noNoise=eliminateNoise(reconstructed, minArea=64)                
+    result_noNoise=reconstructed
     # result_noNoise = reconstructed
 #     correct, total, TP, FP, FN=diceScore(result_noNoise, testDataset.annotation)
     saveImage(result_noNoise, os.path.join(outputPath, 'reconstructed_{}.nii.gz'.format(imgName)))    

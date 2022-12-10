@@ -1,17 +1,20 @@
-#
 import logging as log
 import os
 import argparse
 import pathlib
-import subprocess
 from TestFunc import * 
 from CSFseg import *
-# TODO: Do qualified imports so it's easier to figure out where everything is from
-from os.path import exists
 import CTtools
 from subprocess import call
-import sys
 from postSkullStrip import postSkullStrip
+# TODO: Do qualified imports so it's easier to figure out where everything is from
+
+# TODO: Clear out unused imports, ensure they aren't really needed
+
+# import subprocess
+# import sys
+# from os.path import exists
+
 
 def preprocessing(inName, outPath):
     """
@@ -31,7 +34,7 @@ def preprocessing(inName, outPath):
     #ipath = outPath.parent / ("intermediate_" + outPath.name)
     ipath = outPath
     print(f"{ipath=}")
-    #breakpoint()
+    # breakpoint()
     
     ct_scan_path = outPath
     ct_scan_wodevice_bone = CTtools.bone_extracted(inName, ipath)
@@ -59,17 +62,17 @@ def preprocessing(inName, outPath):
     
     # Affine transformation
     # call(['flirt', '-in', ct_scan_wodevice, '-ref', MNI_152, '-applyxfm', '-init', nameOfAffineMatrix, '-out', str(ct_scan_wodevice).split('.')[0] + '_MNI152.nii.gz'])
-    call(['flirt', '-in', inName, '-ref', MNI_152, '-applyxfm', '-init', nameOfAffineMatrix, '-out', str(inName.name).split('.')[0] + '_MNI152.nii.gz'])
+    # call(['flirt', '-in', inName, '-ref', MNI_152, '-applyxfm', '-init', nameOfAffineMatrix, '-out', str(inName.name).split('.')[0] + '_MNI152.nii.gz'])
 
-    # the code below implement the deformable transformation
+    # # the code below implement the deformable transformation
 
-    ct_scan_wodevice_contraststretching = CTtools.contrastStretch(str(inName), output_name=str(inName.name.split('.')[0]))
+    # ct_scan_wodevice_contraststretching = CTtools.contrastStretch(str(inName), output_name=str(inName.name.split('.')[0]))
 
-    call(['flirt', '-in', ct_scan_wodevice_contraststretching, '-ref', MNI_152, '-applyxfm', '-init', nameOfAffineMatrix, '-out', 
-        ct_scan_wodevice_contraststretching[:ct_scan_wodevice_contraststretching.find('.nii.gz')]+'_MNI152.nii.gz'])
+    # call(['flirt', '-in', ct_scan_wodevice_contraststretching, '-ref', MNI_152, '-applyxfm', '-init', nameOfAffineMatrix, '-out', 
+    #     ct_scan_wodevice_contraststretching[:ct_scan_wodevice_contraststretching.find('.nii.gz')]+'_MNI152.nii.gz'])
 
-    call(['elastix', '-m', ct_scan_wodevice_contraststretching[:ct_scan_wodevice_contraststretching.find('.nii.gz')]+'_MNI152.nii.gz', '-f', MNI_152, '-out', os.path.dirname(ct_scan_path), '-p', bspline_path])
-    # breakpoint()
+    # call(['elastix', '-m', ct_scan_wodevice_contraststretching[:ct_scan_wodevice_contraststretching.find('.nii.gz')]+'_MNI152.nii.gz', '-f', MNI_152, '-out', os.path.dirname(ct_scan_path), '-p', bspline_path])
+    # # breakpoint()
     
 
 def main(input_path, output_path, rdir, betPath=pathlib.Path('/module/src/skull-strip/'), gtPath='gt', device='cuda', BS=200, modelPath=None):
@@ -79,7 +82,7 @@ def main(input_path, output_path, rdir, betPath=pathlib.Path('/module/src/skull-
     device = checkDevice(device)
     model  = loadModel(modelPath, device)
     
-    output_path_dict = dict()
+    # output_path_dict = dict()
     
     # input_name = input_path.name.split('.')[0]
     input_file = input_path.name
@@ -101,7 +104,7 @@ def main(input_path, output_path, rdir, betPath=pathlib.Path('/module/src/skull-
 if __name__== "__main__":
     parser = argparse.ArgumentParser()
     
-    parser.add_argument('--modelPath', default='model_backup/epoch149_ResNet2D5Class.pt')
+    parser.add_argument('--modelPath', default='model_backup/epoch50_2Dresnet_skullstrip5Class.pt')
     parser.add_argument('--outputPath', default='reconstructed')
     parser.add_argument('--dataPath', default='data-split/Scans')
     parser.add_argument('--betPath', default='data-split/skull-strip')
